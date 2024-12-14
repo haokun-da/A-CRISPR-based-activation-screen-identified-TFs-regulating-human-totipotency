@@ -9,6 +9,7 @@ X3PN <- ScaleData(X3PN, features = rownames(X3PN))
 X3PN$group<-"3PN"
 X3PN$celltype<-c(rep("ZIM3-KD",7),rep("dKD",9),rep("ZNF394-KD",3),rep("NC",12))
 anchors3 <- FindIntegrationAnchors(object.list = list(X3PN,embryo.Yan), dims = 1:15,k.anchor = 10,k.filter = 20)
+integrated3 <- IntegrateData(anchorset = anchors3, dims =1:15,k.weight=20)
 integrated3 <- ScaleData(integrated3, features = rownames(integrated3))
 integrated3 <- RunPCA(integrated3,features = VariableFeatures(object = integrated3),npcs=30)
 integrated3 <- FindNeighbors(integrated3, dims = 1:20)
