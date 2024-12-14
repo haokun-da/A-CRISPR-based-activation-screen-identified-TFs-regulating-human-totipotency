@@ -1,6 +1,6 @@
 ### Pesudotime analysis of 3PN (Fig5) 
 
-datasubset <- subset(integrated4,subset = (celltype != "Late blastocyst"))
+datasubset <- subset(integrated3,subset = (celltype != "Late blastocyst"))
 data <- as(as.matrix(datasubset@assays$RNA@counts), 'sparseMatrix')
 pd <- new('AnnotatedDataFrame',
           data = datasubset@meta.data)
@@ -34,96 +34,3 @@ suppressWarnings(mycds <- orderCells(mycds))
 plot_cell_trajectory(mycds, color_by = "celltype",show_cell_names = T)
 plot_cell_trajectory(mycds, color_by = "State")
 plot_cell_trajectory(mycds, color_by = "Pseudotime")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
