@@ -37,7 +37,7 @@ b2 <- integrated3$celltype
 c2 <- data.frame(a2,b2)
 c2[,3] <- c2[,1]
 c2 <- c2[,-1]
-colnames(c)[1] <- "phenotype"
+colnames(c2)[1] <- "phenotype"
 annotation2 <- c2
 plots2 <- plotData(cytotrace2_result = cytotrace2_result2,annotation = annotation2,expression_data = expression_data2)
 
