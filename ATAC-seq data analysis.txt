@@ -3,7 +3,7 @@
 #Quality control
 
 cd raw/
-cat config.clean | while read id;
+cat config | while read id;
 do echo $id
 arr=($id)
 fq2=${arr[2]}
@@ -14,7 +14,7 @@ done
 
 #Alignment
 
-cat config.clean | while read id;
+cat config | while read id;
 do echo $id
 arr=($id)
 fq2=${arr[2]}
