@@ -1,0 +1,130 @@
+### 3PN data integration (Fig5,FigS5)
+
+# Integrating 3PN scRNA-seq data with human Zygote-Late blastocyst scRNA-seq data
+
+X3PN<-CreateSeuratObject(counts = X3PN_data)
+X3PN <- NormalizeData(X3PN, normalization.method = "LogNormalize", scale.factor = 10000)
+X3PN <- FindVariableFeatures(X3PN, selection.method = "vst", nfeatures = 200)
+X3PN <- ScaleData(X3PN, features = rownames(X3PN))
+X3PN$group<-"3PN"
+X3PN$celltype<-c(rep("ZIM3-KD",7),rep("dKD",9),rep("ZNF394-KD",3),rep("NC",12))
+anchors3 <- FindIntegrationAnchors(object.list = list(X3PN,embryo.Yan), dims = 1:15,k.anchor = 10,k.filter = 20)
+integrated3 <- ScaleData(integrated3, features = rownames(integrated3))
+integrated3 <- RunPCA(integrated3,features = VariableFeatures(object = integrated3),npcs=30)
+integrated3 <- FindNeighbors(integrated3, dims = 1:20)
+integrated3  <- FindClusters(integrated3, resolution = 2)
+integrated3 <- RunUMAP(integrated3, dims = 1:20)
+
+#Ploting
+
+DimPlot(integrated3,reduction = "umap",group.by = "celltype",pt.size = 1)
+DimPlot(integrated3,reduction = "umap",pt.size = 1)
+DimPlot(integrated3,pt.size = 1,cells.highlight = list(X4C = colnames(integrated3)[integrated3$celltype %in% c('4-cell embryo')]),sizes.highlight=1)
+DimPlot(integrated3,pt.size = 1,cells.highlight = list(X8C = colnames(integrated3)[integrated3$celltype %in% c('8-cell embryo')]),sizes.highlight=1)
+DimPlot(integrated3,pt.size = 1,cells.highlight = list(dKD = colnames(integrated3)[integrated3$celltype %in% c('dkD')]),sizes.highlight=1)
+DimPlot(integrated3,pt.size = 1,cells.highlight = list(ZIM3-KD = colnames(integrated3)[integrated3$celltype %in% c('ZIM3-KD')]),sizes.highlight=1)
+DimPlot(integrated3,pt.size = 1,cells.highlight = list(ZNF394-KD = colnames(integrated3)[integrated3$celltype %in% c('ZNF394-KD')]),sizes.highlight=1)
+DimPlot(integrated3,pt.size = 1,cells.highlight = list(NC = colnames(integrated3)[integrated3$celltype %in% c('NC')]),sizes.highlight=1)
+
+#cytotrace2 analysis
+
+library(CytoTRACE2) 
+expression_data2 <- na.omit(as.data.frame(integrated3@assays$RNA@counts))
+cytotrace2_result2 <- cytotrace2(expression_data2,species = "human", max_pcs = 50)
+a2 < -names(integrated3@active.ident)
+b2 <- integrated3$celltype
+c2 <- data.frame(a2,b2)
+c2[,3] <- c2[,1]
+c2 <- c2[,-1]
+colnames(c)[1] <- "phenotype"
+annotation2 <- c2
+plots2 <- plotData(cytotrace2_result = cytotrace2_result2,annotation = annotation2,expression_data = expression_data2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

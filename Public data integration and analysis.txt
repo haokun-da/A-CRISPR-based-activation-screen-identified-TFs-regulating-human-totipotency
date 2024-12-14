@@ -1,0 +1,114 @@
+### Public data integration and analysis (Fig4,FigS4)
+
+
+
+# Public data integration
+
+anchors1 <- FindIntegrationAnchors(object.list = list(e4CL,naive,dataprimed,X5iLA,X4CL,TBLC,EPS,ZLC,prEpiSC), dims = 1:30)
+integrated1 <- IntegrateData(anchorset = anchors1, dims = 1:30)
+integrated1 <- ScaleData(integrated1, features = rownames(integrated1))
+integrated1 <- RunPCA(integrated1,features = VariableFeatures(object = integrated1))
+integrated1 <- FindNeighbors(integrated1, dims = 1:30)
+integrated1  <- FindClusters(integrated1, resolution = 0.8)
+integrated1 <- RunUMAP(integrated1, dims = 1:30)
+
+# Ploting
+
+DimPlot(integrated1,reduction = "uamp",pt.size = 0.005)
+DefaultAssay(integrated1) <- "RNA"
+p = DotPlot(integrated1,features = c("DUXA","TPRX1","ZSCAN4","LEUTX","ZNF280A","ZSCAN5B","ARGFX","KLF17")) 
+p + coord_flip()
+FeaturePlot(integrated1,features = c("ZIM3","ZNF394"),blend = T,cols = c("red","blue"),pt.size = 0.005,reduction = 'umap')
+DefaultAssay(integrated1) <- "integrated"
+
+# 8CLC selecting
+
+X8CLC <- subset(integrated1,subset = (seurat_clusters == "14"))
+X8CLC$celltype <- "X8CLC"
+for(i in 1:ncol(integrated1)){
+  for(j in 1:ncol(X8CLC)){
+    if(names(integrated1@active.ident)[i] == names(X8CLC@active.ident)[j]){
+      integrated1$celltype[i] = "X8CLC"
+    }
+  }
+}
+
+# Z2P (ZIM3/ZNF394 double positive) selecting
+
+Z2P <- subset(integrated1,subset = (ZIM3>0)&(ZNF394>0)&(seurat_clusters == "14"))
+Z2P$celltype <- "Z2P"
+for(i in 1:ncol(X8CLC)){
+  for(j in 1:ncol(Z2P)){
+    if(names(X8CLC@active.ident)[i] == names(Z2P@active.ident)[j]){
+      X8CLC$celltype[i] = "Z2P"
+    }
+  }
+}
+for(i in 1:ncol(integrated1)){
+  for(j in 1:ncol(Z2P)){
+    if(names(integrated1@active.ident)[i] == names(Z2P@active.ident)[j]){
+      integrated1$celltype[i] = "Z2P"
+    }
+  }
+}
+
+
+
+
+#Ploting
+
+
+DimPlot(integrated1,pt.size = 0.005,cells.highlight =list(Z2P = colnames(integrated1)[integrated1$celltype %in% c('Z2P')]),sizes.highlight = 0.005)
+DimPlot(integrated1,pt.size = 0.005,cells.highlight =list(X8CLC = colnames(integrated1)[integrated1$celltype %in% c('X8CLC')]),sizes.highlight = 0.005)
+
+#Integrating 8CLC with human E3-E7 embryo scRNA-seq data
+
+anchors2 <- FindIntegrationAnchors(object.list = list(embryo.P,X8CLC), dims = 1:15)
+integrated2 <- IntegrateData(anchorset = anchors2, dims = 1:15)
+integrated2 <- ScaleData(integrated2, features = rownames(integrated2))
+integrated2 <- RunPCA(integrated2,features = VariableFeatures(object = integrated2))
+integrated2 <- FindNeighbors(integrated2, dims = 1:30)
+integrated2  <- FindClusters(integrated2, resolution = 0.5)
+integrated2 <- RunUMAP(integrated2, dims = 1:30)
+
+#Ploting
+
+DimPlot(integrated2,reduction="umap",group.by = "celltype",pt.size = 0.01)
+DimPlot(integrated2,reduction="umap",pt.size = 0.01)
+DimPlot(integrated2,pt.size = 0.01,cells.highlight = list(E3 = colnames(integrated2)[integrated2$celltype %in% c('E3')]),sizes.highlight = 0.05)
+DimPlot(integrated2,pt.size = 0.01,cells.highlight = list(E4 = colnames(integrated2)[integrated2$celltype %in% c('E4')]),sizes.highlight = 0.05)
+DimPlot(integrated2,pt.size = 0.01,cells.highlight = list(X8CLC = colnames(integrated2)[integrated2$celltype %in% c('X8CLC')]),sizes.highlight = 0.05)
+DimPlot(integrated2,pt.size = 0.01,cells.highlight = list(Z2P = colnames(integrated2)[integrated2$celltype %in% c('Z2P')]),sizes.highlight = 0.05)
+DefaultAssay(integrated2) <- "RNA"
+Idents(integrated2) <- integrated2$celltype
+plotsubset1 <- subset(integrated2,subset = (celltype == "E3")|(celltype == "E4")|(celltype == "Z2P"))
+VlnPlot(plotsubset1, features = c("ZIM3"),pt.size=0)
+VlnPlot(plotsubset1, features = c("ZNF394"),pt.size=0)
+DefaultAssay(integrated2) <- "integrated"
+
+#cytotrace2 analysis
+
+cytotrace.subset <- subset(integrated1,subset = ((celltype != "primed(E8)")&(celltype != "EPS")))
+cytotrace.subset<-subset(cytotrace.subset,downsample = 500)
+expression_data1 <- na.omit(as.data.frame(cytotrace.subset@assays$RNA@counts))
+expression_data1 <- na.omit(expression_data1)
+cytotrace2_result1 <- cytotrace2(expression_data1,species = "human")
+a1 <- names(cytotrace.subset@active.ident)
+b1 <- cytotrace.subset$celltype
+c1<- data.frame(a1,b1)
+c1[,3] <- c1[,1]
+c1 <- c1[,-1]
+colnames(c1)[1] <- "phenotype"
+annotation1 <- c1
+plots1 <- plotData(cytotrace2_result = cytotrace2_result1,annotation = annotation1,expression_data = expression_data1)
+
+
+
+
+
+
+
+
+
+
+

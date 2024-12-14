@@ -1,0 +1,129 @@
+### Pesudotime analysis of 3PN (Fig5) 
+
+datasubset <- subset(integrated4,subset = (celltype != "Late blastocyst"))
+data <- as(as.matrix(datasubset@assays$RNA@counts), 'sparseMatrix')
+pd <- new('AnnotatedDataFrame',
+          data = datasubset@meta.data)
+fData <- data.frame(gene_short_name = row.names(data), 
+                    row.names = row.names(data))
+fd <- new('AnnotatedDataFrame', data = fData)
+mycds <- newCellDataSet(data,
+                        phenoData = pd,
+                        featureData = fd,
+                        expressionFamily = negbinomial.size())
+mycds <- estimateSizeFactors(mycds)
+mycds <- estimateDispersions(mycds)
+mycds <- detectGenes(mycds, min_expr = 0.1)
+mycds_expressed_genes <- row.names(subset(fData(mycds),
+                                          num_cells_expressed >= 10))
+mycds <- mycds[mycds_expressed_genes,]
+disp_table <- dispersionTable(mycds)
+unsup_clustering_genes <- subset(disp_table, mean_expression >= 0.1)
+mycds <- setOrderingFilter(mycds, unsup_clustering_genes$gene_id)
+seu.var.gene <- Seurat::VariableFeatures(datasubset)
+mycds <- setOrderingFilter(mycds, seu.var.gene)
+diff_test_res <- differentialGeneTest(mycds[mycds_expressed_genes,],
+                                      fullModelFormulaStr = "~celltype")
+ordering_genes <- row.names (subset(diff_test_res, qval < 0.01))
+mycds <- setOrderingFilter(mycds, ordering_genes)
+plot_ordering_genes(mycds)
+mycds <- reduceDimension(mycds, max_components = 2,
+                         reduction_method = 'DDRTree',
+                         residualModelFormulaStr = "~group")
+suppressWarnings(mycds <- orderCells(mycds))
+plot_cell_trajectory(mycds, color_by = "celltype",show_cell_names = T)
+plot_cell_trajectory(mycds, color_by = "State")
+plot_cell_trajectory(mycds, color_by = "Pseudotime")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

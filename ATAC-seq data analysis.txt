@@ -1,0 +1,86 @@
+###ATAC-seq data analysis
+
+#Quality control
+
+cd raw/
+cat config.clean | while read id;
+do echo $id
+arr=($id)
+fq2=${arr[2]}
+fq1=${arr[1]}
+sample=${arr[0]}
+nohup trim_galore -q 5 -phred33 --length 35 -e 0.1 --stringency 4 --paired -o clean/ $fq1 $fq2 
+done
+
+#Alignment
+
+cat config.clean | while read id;
+do echo $id
+arr=($id)
+fq2=${arr[2]}
+fq1=${arr[1]}
+sample=${arr[0]}
+bowtie2 -p 5 --very-sensitive -X 2000 -x $bowtie2_index -1 $fq1 -2 $fq2 | samtools sort -O bam -@ 5 -o - > ${sample}.bam
+samtools index ${sample}.bam
+samtools flagstat ${sample}.bam > ${sample}.raw.stat
+sambamba markdup --overflow-list-size 600000 --tmpdir='./' -r ${sample}.bam ${sample}.rmdup.bam
+samtools index ${sample}.rmdup.bam
+samtools flagstat ${sample}.rmdup.bam > ${sample}.rmdup.stat
+samtools view -h -f 2 -q 30 ${sample}.rmdup.bam | grep -v chrM | samtools sort -O bam -@ 5 -o - > ${sample}.last.bam
+samtools index ${sample}.last.bam
+samtools flagstat ${sample}.last.bam > ${sample}.last.stat
+bedtools bamtobed -i  ${sample}.last.bam > ${sample}.bed
+done 
+
+#Peakcalling
+
+cd align/
+ls *.bed | while read id ;do (macs2 callpeak -t $id -g hs --nomodel --shift -100 --extsize 200 -n ${id%%.*} --outdir ../peaks/) ;done
+
+#Bedmerge
+
+cd align/
+cat Ctl-1.bed Ctl-2.bed > Ctl.merge.bed
+sort -k1,1 -k2,2n Ctl.merge.bed > merge1.bed 
+bedtools merge -i merge1.bed
+bedtools bedtobam -i merge1.bed -g hg38.genome  > Ctl.merge.bam
+cat dOE-1.bed dOE-2.bed > dOE.merge.bed
+sort -k1,1 -k2,2n dOE.merge.bed > merge2.bed 
+bedtools merge -i merge2.bed
+bedtools bedtobam -i merge2.bed -g hg38.genome  > dOE.merge.bam
+
+#Ploting
+
+ls *last.bam |while read id ; do
+nohup bamCoverage -p 5 --normalizeUsing CPM -b $id -o ${id%%.*}.last.bw &
+done
+
+nohup computeMatrix reference-point --referencePoint TSS -p 15 
+-b 2000 -a 2000 
+-R hg38.ref.bed 
+-S *.bw 
+--skipZeros -o matrix1_test_TSS.gz 
+--outFileSortedRegions test_genes.bed
+nohup computeMatrix scale-regions  -p 15  
+-b 2000 -a 2000  
+-R hg38ref.bed 
+-S *.bw 
+--skipZeros -o test_body.gz
+plotHeatmap -m matrix1_test_TSS.gz -out test_Heatmap.pdf --plotFileFormat pdf 
+plotHeatmap -m test_body.gz -out test_Heatmap2.pdf --plotFileFormat pdf 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
