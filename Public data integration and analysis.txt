@@ -89,7 +89,7 @@ DefaultAssay(integrated2) <- "integrated"
 #cytotrace2 analysis
 
 cytotrace.subset <- subset(integrated1,subset = ((celltype != "primed(E8)")&(celltype != "EPS")))
-cytotrace.subset<-subset(cytotrace.subset,downsample = 500)
+cytotrace.subset <- subset(cytotrace.subset,downsample = 500)
 expression_data1 <- na.omit(as.data.frame(cytotrace.subset@assays$RNA@counts))
 expression_data1 <- na.omit(expression_data1)
 cytotrace2_result1 <- cytotrace2(expression_data1,species = "human")
