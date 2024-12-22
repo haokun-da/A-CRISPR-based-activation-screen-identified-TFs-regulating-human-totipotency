@@ -63,7 +63,7 @@ nohup computeMatrix reference-point --referencePoint TSS -p 15
 --outFileSortedRegions test_genes.bed
 nohup computeMatrix scale-regions  -p 15  
 -b 2000 -a 2000  
--R hg38ref.bed 
+-R hg38.ref.bed 
 -S *.bw 
 --skipZeros -o test_body.gz
 plotHeatmap -m matrix1_test_TSS.gz -out test_Heatmap.pdf --plotFileFormat pdf 
